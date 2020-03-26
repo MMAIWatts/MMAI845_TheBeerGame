@@ -26,14 +26,10 @@ import sys
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-"""
--------------------------------------------------------
-Given two SupplyChainActors B <--> A, where
-A is higher in the supply chain, let "top queue" denote A's
-outgoingOrderQueue/B's incomingOrderQueue. Let "bottom queue"
-denote B's outgoingDeliveryQueue/A's incoming delivery queue. 
--------------------------------------------------------
-"""
+
+def roundint(value, base=5):
+    return int(value) - int(value) % int(base)
+
 wholesalerRetailerTopQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 wholesalerRetailerBottomQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 
@@ -43,11 +39,6 @@ distributorWholesalerBottomQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 factoryDistributorTopQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 factoryDistributorBottomQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 
-"""
--------------------------------------------------------
-Each queue should have at least 2 orders of size CUSTOMER_INITIAL_ORDER 
--------------------------------------------------------
-"""
 for i in range(0, 2):
     wholesalerRetailerTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
     wholesalerRetailerBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
@@ -56,36 +47,14 @@ for i in range(0, 2):
     factoryDistributorTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
     factoryDistributorBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
 
-"""
--------------------------------------------------------
-Now we initialize our SupplyChainObjects. Passing the correct
-queues is essential.
--------------------------------------------------------
-"""
-
-# theCustomer = Customer()
-# myRetailer = Retailer(None, wholesalerRetailerTopQueue, wholesalerRetailerBottomQueue, None, theCustomer)
-#
-# myWholesaler = Wholesaler(wholesalerRetailerTopQueue, distributorWholesalerTopQueue,
-#                           distributorWholesalerBottomQueue, wholesalerRetailerBottomQueue)
-#
-# myDistributor = Distributor(distributorWholesalerTopQueue, factoryDistributorTopQueue,
-#                             factoryDistributorBottomQueue, distributorWholesalerBottomQueue)
-#
-# myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
 # Initialize Statistics object
 myStats = SupplyChainStatistics()
 
-"""
--------------------------------------------------------
-Main game-play!
--------------------------------------------------------
-"""
-num_episodes = 1000
-num_actions = 30
+num_episodes = 20000
+num_actions = 20
 initial_epsilon = 0.5
-final_epsilon = 0.1
+final_epsilon = 0.01
 agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
 
 costs_incurred = []
@@ -117,7 +86,8 @@ for i_episode in tqdm(range(num_episodes)):
 
         # Wholesaler takes turn
         # state is a tuple of (inventory, incoming, outgoing)
-        state = thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity
+        state = roundint(myWholesaler.currentStock, 2), roundint(myWholesaler.currentOrders, 2), \
+                roundint(myWholesaler.lastOrderQuantity, 2)
         action = agent.get_next_action(state)
         myWholesaler.TakeTurn(thisWeek, action)
         reward = -myWholesaler.CalcCostForTurn()
