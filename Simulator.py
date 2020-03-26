@@ -25,6 +25,7 @@ import SupplyChainAgent
 import sys
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import pandas as pd
 
 
 def roundint(value, base=5):
@@ -51,7 +52,7 @@ for i in range(0, 2):
 # Initialize Statistics object
 myStats = SupplyChainStatistics()
 
-num_episodes = 20000
+num_episodes = 500000
 num_actions = 20
 initial_epsilon = 0.5
 final_epsilon = 0.01
@@ -106,7 +107,7 @@ for i_episode in tqdm(range(num_episodes)):
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('Episode')
 ax1.set_ylabel('Cost Incurred', color='b')
-ax1.plot(costs_incurred, color='b', alpha=0.6)
+ax1.plot(pd.Series(costs_incurred).rolling(50).mean(), color='b', alpha=0.6)
 
 ax2 = ax1.twinx()
 ax2.set_ylabel('Epsilon', color='r')
