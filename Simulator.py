@@ -82,13 +82,14 @@ myStats = SupplyChainStatistics()
 Main game-play!
 -------------------------------------------------------
 """
-num_episodes = 20000
+num_episodes = 1000
 num_actions = 30
-initial_epsilon = 0.9
-final_epsilon = 0.01
+initial_epsilon = 0.5
+final_epsilon = 0.1
 agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
 
 costs_incurred = []
+epsilon_values = []
 
 for i_episode in tqdm(range(num_episodes)):
 
@@ -104,8 +105,9 @@ for i_episode in tqdm(range(num_episodes)):
     myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
     # decrease exploration over time
-    new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes)
+    new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes) ** 2
     agent.set_epsilon(new_epsilon)
+    epsilon_values.append(new_epsilon)
 
     episode = []
     for thisWeek in range(WEEKS_TO_PLAY):
@@ -131,8 +133,15 @@ for i_episode in tqdm(range(num_episodes)):
     agent.update_Q(episode)
     costs_incurred.append(myWholesaler.GetCostIncurred())
 
-plt.plot(costs_incurred)
-plt.xlabel('Episode')
-plt.ylabel('Cost Incurred')
+fig, ax1 = plt.subplots()
+ax1.set_xlabel('Episode')
+ax1.set_ylabel('Cost Incurred', color='b')
+ax1.plot(costs_incurred, color='b', alpha=0.6)
+
+ax2 = ax1.twinx()
+ax2.set_ylabel('Epsilon', color='r')
+ax2.plot(epsilon_values, color='r')
+
+fig.tight_layout()
 plt.show()
 

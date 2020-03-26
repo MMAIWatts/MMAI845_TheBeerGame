@@ -19,10 +19,10 @@ class MonteCarloAgent:
         self.return_count = defaultdict(float)
         self.discount_factor = discount_factor
         self.epsilon = epsilon
-
+        self.nA = nA
         self.Q = defaultdict(lambda: np.zeros(nA))
 
-        self.policy = make_epsilon_greedy_policy(self.Q, self.epsilon, nA)
+        self.policy = make_epsilon_greedy_policy(self.Q, self.epsilon, self.nA)
         return
 
     def get_next_action(self, state):
@@ -46,6 +46,9 @@ class MonteCarloAgent:
             self.return_sum[sa_pair] += G
             self.return_count[sa_pair] += 1.0
             self.Q[state][action] = self.return_sum[sa_pair] / self.return_count[sa_pair]
+
+            # update policy
+            self.policy = make_epsilon_greedy_policy(self.Q, self.epsilon, self.nA)
 
     def set_epsilon(self, epsilon):
         self.epsilon = epsilon
