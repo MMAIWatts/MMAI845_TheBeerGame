@@ -8,10 +8,11 @@ Version: February 7th 2016
 -------------------------------------------------------
 """
 
-from SupplyChainActor import SupplyChainActor
+from theBeerGame.SupplyChainActor import SupplyChainActor
+
 
 class Wholesaler(SupplyChainActor):
-    
+
     def __init__(self, incomingOrdersQueue, outgoingOrdersQueue, incomingDeliveriesQueue, outgoingDeliveriesQueue):
         """
         -------------------------------------------------------
@@ -26,27 +27,27 @@ class Wholesaler(SupplyChainActor):
         """
         super().__init__(incomingOrdersQueue, outgoingOrdersQueue, incomingDeliveriesQueue, outgoingDeliveriesQueue)
         return
-    
-    def TakeTurn(self, weekNum):
-        
-        #The steps for taking a turn are as follows:
-        
-        #RECEIVE NEW DELIVERY FROM DISTRIBUTOR
-        self.ReceiveIncomingDelivery()    #This also advances the queue!
-        
-        #RECEIVE NEW ORDER FROM RETAILER
-        self.ReceiveIncomingOrders()     #This also advances the queue!
-        
-        #PREPARE DELIVERY
+
+    def TakeTurn(self, weekNum, amount_to_order):
+
+        # The steps for taking a turn are as follows:
+
+        # RECEIVE NEW DELIVERY FROM DISTRIBUTOR
+        self.ReceiveIncomingDelivery()  # This also advances the queue!
+
+        # RECEIVE NEW ORDER FROM RETAILER
+        self.ReceiveIncomingOrders()  # This also advances the queue!
+
+        # PREPARE DELIVERY
         if weekNum <= 4:
             self.PlaceOutgoingDelivery(4)
         else:
             self.PlaceOutgoingDelivery(self.CalcBeerToDeliver())
-        
-        #PLACE ORDER
-        self.PlaceOutgoingOrder(weekNum)
-        
-        #UPDATE COSTS
+
+        # PLACE ORDER
+        self.PlaceOutgoingOrder(amount_to_order)
+
+        # UPDATE COSTS
         self.costsIncurred += self.CalcCostForTurn()
-        
+
         return

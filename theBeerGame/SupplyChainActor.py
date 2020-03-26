@@ -8,8 +8,9 @@ Version: February 7th 2016
 -------------------------------------------------------
 """
 
-from Settings import *
-from SupplyChainQueue import SupplyChainQueue
+from theBeerGame.Settings import *
+from theBeerGame.SupplyChainQueue import SupplyChainQueue
+
 
 class SupplyChainActor:
     

@@ -12,7 +12,7 @@ Version: February 14th 2016
 -------------------------------------------------------
 """
 
-from Settings import *
+from theBeerGame.Settings import *
 
 class SupplyChainQueue():
     

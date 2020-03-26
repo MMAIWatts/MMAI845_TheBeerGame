@@ -8,7 +8,7 @@ Version: February 7th 2016
 -------------------------------------------------------
 """
 
-from SupplyChainActor import SupplyChainActor
+from theBeerGame.SupplyChainActor import SupplyChainActor
 
 class Distributor(SupplyChainActor):
     

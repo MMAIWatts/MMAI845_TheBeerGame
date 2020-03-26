@@ -8,9 +8,9 @@ Version: February 7th 2016
 -------------------------------------------------------
 """
 
-from Customer import Customer
-from SupplyChainActor import SupplyChainActor
-from SupplyChainQueue import SupplyChainQueue
+from theBeerGame.Customer import Customer
+from theBeerGame.SupplyChainActor import SupplyChainActor
+from theBeerGame.SupplyChainQueue import SupplyChainQueue
 
 class Retailer(SupplyChainActor):
     
