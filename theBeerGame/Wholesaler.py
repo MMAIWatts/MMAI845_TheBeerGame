@@ -39,13 +39,13 @@ class Wholesaler(SupplyChainActor):
         self.ReceiveIncomingOrders()  # This also advances the queue!
 
         # PREPARE DELIVERY
-        if weekNum <= 4:
-            self.PlaceOutgoingDelivery(4)
-        else:
-            self.PlaceOutgoingDelivery(self.CalcBeerToDeliver())
+        # if weekNum <= 4:
+        #     self.PlaceOutgoingDelivery(4)
+        # else:
+        self.PlaceOutgoingDelivery(self.CalcBeerToDeliver())
 
         # PLACE ORDER
-        self.PlaceOutgoingOrder(amount_to_order)
+        self.PlaceOutgoingOrder(weekNum, amount_to_order)
 
         # UPDATE COSTS
         self.costsIncurred += self.CalcCostForTurn()
