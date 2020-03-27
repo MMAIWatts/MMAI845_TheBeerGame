@@ -7,7 +7,7 @@ Email:   tom@lamantia.mail.utoronto.ca
 Version: February 14th 2016
 -------------------------------------------------------
 """
-
+import numpy as np
 from theBeerGame.Settings import *
 
 class Customer:
@@ -47,14 +47,16 @@ class Customer:
         -------------------------------------------------------
         Preconditions: weekNum - the current week of game-play.
         Postconditions:
-            The customer orders 4 cases on weeks 1-5, and 8 cases 
-            for all other weeks. 
+            The customer orders randomly 1 to 30 cases each week. 
         -------------------------------------------------------
         """
-        if weekNum <= 5:
-            result = CUSTOMER_INITIAL_ORDERS
-        else:
-            result = CUSTOMER_SUBSEQUENT_ORDERS
+        # if weekNum <= 5:
+        #     result = CUSTOMER_INITIAL_ORDERS
+        # else:
+        #     result = CUSTOMER_SUBSEQUENT_ORDERS
+        # return result
+        
+        result = np.random.choice(np.arange(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS + 1), size = 1)
         return result
     
     def GetBeerReceived(self):

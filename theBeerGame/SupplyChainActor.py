@@ -60,33 +60,51 @@ class SupplyChainActor:
         self.outgoingDeliveriesQueue.PushEnvelope(amountToDeliver)
         return
     
-    def PlaceOutgoingOrder(self, weekNum):
+    def PlaceOutgoingOrder(self, weekNum, agent_action = None):
         """
         -------------------------------------------------------
         Calculates the size of the weekly outgoing order.
         -------------------------------------------------------
         Preconditions: weekNum - the current week number.
         Postconditions:
-            Calculates the order quantity using an anchor and maintain
+            #Calculates the order quantity using an anchor and maintain
             strategy.
+
+            Calculates the order quantity using an basestock
+            strategy
         -------------------------------------------------------
         """
 
-        #First weeks are in equilibrium
-        if weekNum <= 4:
-            amountToOrder = 4
-        #After first few weeks, the actor chooses the order. We use "anchor and maintain" strategy.
-        else:
-            #We want to cover any out flows, we know that there are some orders in the pipeline.
-            amountToOrder = 0.5 * self.currentOrders
+        # #First weeks are in equilibrium
+        # if weekNum <= 4:
+        #     amountToOrder = 4
+        # #After first few weeks, the actor chooses the order. We use "anchor and maintain" strategy.
+        # else:
+        #     #We want to cover any out flows, we know that there are some orders in the pipeline.
+        #     amountToOrder = 0.5 * self.currentOrders
             
-            if (TARGET_STOCK - self.currentStock) > 0:
-                amountToOrder += TARGET_STOCK - self.currentStock
+        #     if (TARGET_STOCK - self.currentStock) > 0:
+        #         amountToOrder += TARGET_STOCK - self.currentStock
             
+        # self.outgoingOrdersQueue.PushEnvelope(amountToOrder)
+        # self.lastOrderQuantity = amountToOrder
+        
+        # return
+
+        if agent_action is None:
+        #basestock policy
+            qunatityPipeline = self.incomingDeliveriesQueue.QuantityPipline()
+            amountToOrder = self.currentOrders - (self.currentStock + qunatityPipeline)
+
+        #RL agent
+        else: 
+            amountToOrder = agent_action
+
+
         self.outgoingOrdersQueue.PushEnvelope(amountToOrder)
         self.lastOrderQuantity = amountToOrder
         
-        return
+        return 
     
     def ReceiveIncomingDelivery(self):
         """

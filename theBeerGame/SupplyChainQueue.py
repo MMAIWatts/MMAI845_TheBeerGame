@@ -81,6 +81,26 @@ class SupplyChainQueue():
             quantityDelivered = 0
          
         return quantityDelivered
+
+
+    def QuantityPipline(self):
+        """
+        -------------------------------------------------------
+        Returns the beer order in the queue.
+        -------------------------------------------------------
+        Preconditions: None.
+        Postconditions: Returns the number of cases of beer ordered.
+ 
+        This method also advances the queue!
+        -------------------------------------------------------
+        """
+        if len(self.data) >= 1:
+            #quantityInPipeline = self.data[0]
+            quantityInPipeline = sum(self.data)
+        else:
+            quantityInPipeline = 0
+         
+        return quantityInPipeline        
     
     def PrettyPrint(self):
         """

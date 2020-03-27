@@ -52,10 +52,10 @@ for i in range(0, 2):
 # Initialize Statistics object
 myStats = SupplyChainStatistics()
 
-num_episodes = 500000
-num_actions = 20
-initial_epsilon = 0.5
-final_epsilon = 0.01
+num_episodes = NUM_EPOSODES
+num_actions = NUM_ACTIONS
+initial_epsilon = INITIAL_EPSILON
+final_epsilon = FINAL_EPSILON
 agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
 
 costs_incurred = []
@@ -89,6 +89,7 @@ for i_episode in tqdm(range(num_episodes)):
         # state is a tuple of (inventory, incoming, outgoing)
         state = roundint(myWholesaler.currentStock, 2), roundint(myWholesaler.currentOrders, 2), \
                 roundint(myWholesaler.lastOrderQuantity, 2)
+
         action = agent.get_next_action(state)
         myWholesaler.TakeTurn(thisWeek, action)
         reward = -myWholesaler.CalcCostForTurn()
