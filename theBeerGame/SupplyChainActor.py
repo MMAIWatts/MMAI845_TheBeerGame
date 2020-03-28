@@ -75,27 +75,14 @@ class SupplyChainActor:
         -------------------------------------------------------
         """
 
-        # #First weeks are in equilibrium
-        # if weekNum <= 4:
-        #     amountToOrder = 4
-        # #After first few weeks, the actor chooses the order. We use "anchor and maintain" strategy.
-        # else:
-        #     #We want to cover any out flows, we know that there are some orders in the pipeline.
-        #     amountToOrder = 0.5 * self.currentOrders
-            
-        #     if (TARGET_STOCK - self.currentStock) > 0:
-        #         amountToOrder += TARGET_STOCK - self.currentStock
-            
-        # self.outgoingOrdersQueue.PushEnvelope(amountToOrder)
-        # self.lastOrderQuantity = amountToOrder
-        
         # return
 
         if agent_action is None:
         # basestock policy
             quantity_pipeline = self.incomingDeliveriesQueue.QuantityPipline()
             amountToOrder = self.currentOrders - (self.currentStock + quantity_pipeline)
-
+            if amountToOrder < 0:
+                amountToOrder = 0
         # RL agent
         else: 
             amountToOrder = agent_action
@@ -230,3 +217,9 @@ class SupplyChainActor:
         -------------------------------------------------------
         """
         return (self.currentStock - self.currentOrders)
+
+    def reset(self):
+        self.currentStock = INITIAL_STOCK
+        self.currentOrders = INITIAL_CURRENT_ORDERS
+        self.costsIncurred = INITIAL_COST
+        self.lastOrderQuantity = 0

@@ -22,7 +22,9 @@ class Customer:
             Initializes the Customer object in its initial state.
         -------------------------------------------------------
         """
+        np.random.seed(RANDOM_SEED)
         self.totalBeerReceived = 0
+        self.orders = np.random.randint(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS, size=WEEKS_TO_PLAY)
         return
     
     def RecieveFromRetailer(self, amountReceived):
@@ -37,7 +39,6 @@ class Customer:
         -------------------------------------------------------
         """
         self.totalBeerReceived += amountReceived
-        
         return
     
     def CalculateOrder(self, weekNum):
@@ -50,14 +51,7 @@ class Customer:
             The customer orders randomly 1 to 30 cases each week. 
         -------------------------------------------------------
         """
-        # if weekNum <= 5:
-        #     result = CUSTOMER_INITIAL_ORDERS
-        # else:
-        #     result = CUSTOMER_SUBSEQUENT_ORDERS
-        # return result
-        
-        result = np.random.choice(np.arange(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS + 1))
-        return result
+        return self.orders[weekNum]
     
     def GetBeerReceived(self):
         """
@@ -69,3 +63,8 @@ class Customer:
         -------------------------------------------------------
         """
         return self.totalBeerReceived
+
+    def reset(self):
+        self.totalBeerReceived = 0
+        self.orders = np.random.randint(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS, size=WEEKS_TO_PLAY)
+        return

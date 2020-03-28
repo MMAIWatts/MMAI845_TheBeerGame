@@ -3,8 +3,9 @@ from collections import defaultdict
 from keras.layers import Dense, Activation
 from keras.models import Sequential, load_model
 from keras.optimizers import Adam
-
+import dill
 from ReplayBuffer import ReplayBuffer
+from time import clock
 
 
 def make_epsilon_greedy_policy(Q, epsilon, nA):
@@ -32,7 +33,7 @@ def build_dqn(lr, n_actions, input_dims, fc1_dims, fc2_dims):
 
 class MonteCarloAgent:
 
-    def __init__(self, nA, num_episodes=52, discount_factor=1.0, epsilon=0.5, fname='mc_model.npy'):
+    def __init__(self, nA, num_episodes=52, discount_factor=0.99, epsilon=0.5, fname='mc_model.npy'):
         self.return_sum = defaultdict(float)
         self.return_count = defaultdict(float)
         self.discount_factor = discount_factor
@@ -53,31 +54,40 @@ class MonteCarloAgent:
         self.episode_memory.append((tuple(state), action, reward))
 
     def learn(self):
-        sa_in_episode = set([(tuple(x[0]), x[1]) for x in self.episode_memory])
+        episode = self.episode_memory
+        sa_in_episode = set([(tuple(x[0]), x[1]) for x in episode])
+
         for state, action in sa_in_episode:
+
             sa_pair = (state, action)
-            first_occurence_idx = next(i for i, x in enumerate(self.episode_memory)
+            first_occurence_idx = next(i for i, x in enumerate(episode)
                                        if x[0] == state and x[1] == action)
 
             # sum up all rewards for first occurences
-            G = sum([x[2] * (self.discount_factor ** i) for i, x in enumerate(self.episode_memory[first_occurence_idx:])])
+            G = sum([x[2] * (self.discount_factor ** i) for i, x in enumerate(episode[first_occurence_idx:])])
 
             # calculate average return for this state ovr all sampled episodes
             self.return_sum[sa_pair] += G
             self.return_count[sa_pair] += 1.0
             self.Q[state][action] = self.return_sum[sa_pair] / self.return_count[sa_pair]
 
-            # update policy
-            self.policy = make_epsilon_greedy_policy(self.Q, self.epsilon, self.nA)
+        # update policy
+        self.policy = make_epsilon_greedy_policy(self.Q, self.epsilon, self.nA)
 
     def set_epsilon(self, epsilon):
         self.epsilon = epsilon
 
     def save_model(self):
-        np.save(self.file_name, self.Q)
+        with open(self.file_name, 'wb') as dill_file:
+            dill.dump(self.Q, dill_file)
 
     def load_model(self):
-        self.Q = np.load(self.file_name)
+        with open(self.file_name, 'rb') as dill_file:
+            self.Q = dill.load(self.file_name)
+
+    def reset(self):
+        self.episode_memory = []
+
 
 class DQNAgent:
     """

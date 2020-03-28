@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
+import time
 
 import SupplyChainAgent
 from theBeerGame.Customer import Customer
@@ -34,19 +35,35 @@ for i in range(0, 2):
 # Initialize Statistics object
 myStats = SupplyChainStatistics()
 
-num_episodes = 50000
-num_actions = 30
+# Initialize actors
+theCustomer = Customer()
+myRetailer = Retailer(None, wholesalerRetailerTopQueue, wholesalerRetailerBottomQueue, None, theCustomer)
+
+myWholesaler = Wholesaler(wholesalerRetailerTopQueue, distributorWholesalerTopQueue,
+                          distributorWholesalerBottomQueue, wholesalerRetailerBottomQueue)
+
+myDistributor = Distributor(distributorWholesalerTopQueue, factoryDistributorTopQueue,
+                            factoryDistributorBottomQueue, distributorWholesalerBottomQueue)
+
+myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
+
+
+num_episodes = 100000
+num_actions = 20
 initial_epsilon = 1.0
 final_epsilon = 0.01
 agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
 # agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
 #                                   n_actions=num_actions, mem_size=1000000, batch_size=52)
 
+
 costs_incurred = []
 epsilon_values = []
 
-for i_episode in tqdm(range(num_episodes)):
 
+for i_episode in tqdm(range(num_episodes)):
+    # reset actor states
+    agent.reset()
     theCustomer = Customer()
     myRetailer = Retailer(None, wholesalerRetailerTopQueue, wholesalerRetailerBottomQueue, None, theCustomer)
 
@@ -58,19 +75,28 @@ for i_episode in tqdm(range(num_episodes)):
 
     myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
-    # decrease exploration over time
+    # initialize order queues
+    for i in range(0, 2):
+        wholesalerRetailerTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        wholesalerRetailerBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        distributorWholesalerTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        distributorWholesalerBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        factoryDistributorTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        factoryDistributorBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+
+    # decrease exploration over time and save
     new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes) ** 2
     agent.set_epsilon(new_epsilon)
     epsilon_values.append(new_epsilon)
 
-    episode = []
+    # run episode
     for thisWeek in range(WEEKS_TO_PLAY):
         # Retailer takes turn, update stats
         myRetailer.TakeTurn(thisWeek)
 
         # Wholesaler takes turn
         # state is a list of (week num, inventory, incoming, outgoing)
-        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
+        state = list((myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
         action = agent.get_next_action(state)
 
         myWholesaler.TakeTurn(thisWeek, action)
@@ -91,8 +117,12 @@ for i_episode in tqdm(range(num_episodes)):
     agent.learn()
     costs_incurred.append(myWholesaler.GetCostIncurred())
 
-    # if i_episode % 1000 == 0 and i_episode > 0:
-    #     agent.save_model()
+    if i_episode % 500 == 0 and i_episode > 0:
+        s = ''
+
+    # save model every xx episodes
+    if i_episode % 5000 == 0 and i_episode > 0:
+        agent.save_model()
 
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('Episode')
@@ -108,9 +138,9 @@ plt.show()
 fig.savefig('figures/cost_plot.png')
 
 # get best score
-best_episode = np.argmin(costs_incurred, axis=0)[0]
-best_score = costs_incurred[best_episode][0]
-last_200 = np.mean(costs_incurred[-100][0])
+best_episode = np.argmin(costs_incurred, axis=0)
+best_score = costs_incurred[best_episode]
+last_200 = np.mean(costs_incurred[-100])
 print('Best score of {}'.format(best_score))
 print('Best episode {}'.format(best_episode))
 print('Average of last 100 episodes {}'.format(last_200))
