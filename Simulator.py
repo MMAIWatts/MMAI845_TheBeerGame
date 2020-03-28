@@ -1,36 +1,19 @@
-"""
--------------------------------------------------------
-The main program. The main program handles the simulation
-by co-ordinating the game. This involves incrementing all of the
-communication queues between the different parts of the system.
-
-The main program also acts as the customer, receiving the
-product at the end of the supply chain system.
--------------------------------------------------------
-Author:  Tom LaMantia
-Email:   tom@lamantia.mail.utoronto.ca
-Version: February 14th 2016
--------------------------------------------------------
-"""
-from theBeerGame.Settings import *
-from theBeerGame.Customer import Customer
-from theBeerGame.SupplyChainQueue import SupplyChainQueue
-from theBeerGame.Retailer import Retailer
-from theBeerGame.Wholesaler import Wholesaler
-from theBeerGame.Distributor import Distributor
-from theBeerGame.Factory import Factory
-from theBeerGame.SupplyChainStatistics import SupplyChainStatistics
+import matplotlib.pyplot as plt
+import pandas as pd
+from tqdm import tqdm
+import numpy as np
 
 import SupplyChainAgent
-import sys
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-import pandas as pd
+from theBeerGame.Customer import Customer
+from theBeerGame.Distributor import Distributor
+from theBeerGame.Factory import Factory
+from theBeerGame.Retailer import Retailer
+from theBeerGame.Settings import *
+from theBeerGame.SupplyChainQueue import SupplyChainQueue
+from theBeerGame.SupplyChainStatistics import SupplyChainStatistics
+from theBeerGame.Wholesaler import Wholesaler
 
-
-def roundint(value, base=5):
-    return int(value) - int(value) % int(base)
-
+# Initialize SupplyChainQueues
 wholesalerRetailerTopQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 wholesalerRetailerBottomQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 
@@ -48,15 +31,16 @@ for i in range(0, 2):
     factoryDistributorTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
     factoryDistributorBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
 
-
 # Initialize Statistics object
 myStats = SupplyChainStatistics()
 
-num_episodes = NUM_EPOSODES
-num_actions = NUM_ACTIONS
-initial_epsilon = INITIAL_EPSILON
-final_epsilon = FINAL_EPSILON
-agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
+num_episodes = 5000
+num_actions = 30
+initial_epsilon = 1.0
+final_epsilon = 0.01
+# agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
+agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
+                                  n_actions=num_actions, mem_size=1000000, batch_size=52)
 
 costs_incurred = []
 epsilon_values = []
@@ -81,19 +65,18 @@ for i_episode in tqdm(range(num_episodes)):
 
     episode = []
     for thisWeek in range(WEEKS_TO_PLAY):
-
         # Retailer takes turn, update stats
         myRetailer.TakeTurn(thisWeek)
 
         # Wholesaler takes turn
-        # state is a tuple of (inventory, incoming, outgoing)
-        state = roundint(myWholesaler.currentStock, 2), roundint(myWholesaler.currentOrders, 2), \
-                roundint(myWholesaler.lastOrderQuantity, 2)
-
+        # state is a list of (week num, inventory, incoming, outgoing)
+        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
         action = agent.get_next_action(state)
         myWholesaler.TakeTurn(thisWeek, action)
+        state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
         reward = -myWholesaler.CalcCostForTurn()
-        episode.append((state, action, reward))
+        done = 1 if thisWeek == WEEKS_TO_PLAY else 0
+        agent.remember(state, action, reward, state_, done)
 
         # Distributor takes turn
         myDistributor.TakeTurn(thisWeek)
@@ -102,8 +85,11 @@ for i_episode in tqdm(range(num_episodes)):
         myFactory.TakeTurn(thisWeek)
 
     # update Q table
-    agent.update_Q(episode)
+    agent.learn()
     costs_incurred.append(myWholesaler.GetCostIncurred())
+
+    if i_episode % 10 == 0 and i_episode > 0:
+        agent.save_model()
 
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('Episode')
@@ -117,3 +103,8 @@ ax2.plot(epsilon_values, color='r')
 fig.tight_layout()
 plt.show()
 
+# get best score
+best_episode = np.argmin(costs_incurred, axis=0)[0]
+best_score = costs_incurred[best_episode][0]
+print('Best score of {}'.format(best_score))
+print('Best episode {}'.format(best_episode))
