@@ -34,12 +34,12 @@ for i in range(0, 2):
 # Initialize Statistics object
 myStats = SupplyChainStatistics()
 
-num_episodes = 500
+num_episodes = 10000
 num_actions = 30
 initial_epsilon = 1.0
-final_epsilon = 0.001
+final_epsilon = 0.01
 # agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
-agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
+agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
                                   n_actions=num_actions, mem_size=1000000, batch_size=52)
 
 costs_incurred = []
@@ -71,13 +71,11 @@ for i_episode in tqdm(range(num_episodes)):
 
         # Wholesaler takes turn
         # state is a list of (week num, inventory, incoming, outgoing)
-        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity,
-                      last_last_order_quantity))
+        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
         action = agent.get_next_action(state)
         last_last_order_quantity = myWholesaler.lastOrderQuantity
         myWholesaler.TakeTurn(thisWeek, action)
-        state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity,
-                       last_last_order_quantity))
+        state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
         reward = -myWholesaler.CalcCostForTurn()
         done = 1 if thisWeek == WEEKS_TO_PLAY else 0
         agent.remember(state, action, reward, state_, done)
@@ -92,7 +90,7 @@ for i_episode in tqdm(range(num_episodes)):
     agent.learn()
     costs_incurred.append(myWholesaler.GetCostIncurred())
 
-    if i_episode % 10 == 0 and i_episode > 0:
+    if i_episode % 1000 == 0 and i_episode > 0:
         agent.save_model()
 
 fig, ax1 = plt.subplots()
@@ -114,4 +112,4 @@ best_score = costs_incurred[best_episode][0]
 last_200 = np.mean(costs_incurred[-100][0])
 print('Best score of {}'.format(best_score))
 print('Best episode {}'.format(best_episode))
-print('Average of last 200 episodes {}'.format(last_200))
+print('Average of last 100 episodes {}'.format(last_200))
