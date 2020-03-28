@@ -34,7 +34,7 @@ for i in range(0, 2):
 # Initialize Statistics object
 myStats = SupplyChainStatistics()
 
-num_episodes = 5000
+num_episodes = 500
 num_actions = 30
 initial_epsilon = 1.0
 final_epsilon = 0.001
@@ -106,6 +106,7 @@ ax2.plot(epsilon_values, color='r')
 
 fig.tight_layout()
 plt.show()
+fig.savefig('figures/cost_plot.png')
 
 # get best score
 best_episode = np.argmin(costs_incurred, axis=0)[0]
