@@ -37,9 +37,9 @@ myStats = SupplyChainStatistics()
 num_episodes = 5000
 num_actions = 30
 initial_epsilon = 1.0
-final_epsilon = 0.01
+final_epsilon = 0.001
 # agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
-agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
+agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
                                   n_actions=num_actions, mem_size=1000000, batch_size=52)
 
 costs_incurred = []
@@ -62,6 +62,7 @@ for i_episode in tqdm(range(num_episodes)):
     new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes) ** 2
     agent.set_epsilon(new_epsilon)
     epsilon_values.append(new_epsilon)
+    last_last_order_quantity = 0
 
     episode = []
     for thisWeek in range(WEEKS_TO_PLAY):
@@ -70,10 +71,13 @@ for i_episode in tqdm(range(num_episodes)):
 
         # Wholesaler takes turn
         # state is a list of (week num, inventory, incoming, outgoing)
-        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
+        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity,
+                      last_last_order_quantity))
         action = agent.get_next_action(state)
+        last_last_order_quantity = myWholesaler.lastOrderQuantity
         myWholesaler.TakeTurn(thisWeek, action)
-        state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
+        state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity,
+                       last_last_order_quantity))
         reward = -myWholesaler.CalcCostForTurn()
         done = 1 if thisWeek == WEEKS_TO_PLAY else 0
         agent.remember(state, action, reward, state_, done)
