@@ -86,7 +86,7 @@ class DQNAgent:
 
         self.memory = ReplayBuffer(mem_size, input_dims, n_actions, discrete=True)
 
-        self.q_eval = build_dqn(alpha, n_actions, input_dims, 16, 16)
+        self.q_eval = build_dqn(alpha, n_actions, input_dims, 8, 16)
 
     def remember(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)

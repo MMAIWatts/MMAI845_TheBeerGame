@@ -106,5 +106,7 @@ plt.show()
 # get best score
 best_episode = np.argmin(costs_incurred, axis=0)[0]
 best_score = costs_incurred[best_episode][0]
+last_200 = np.mean(costs_incurred[-100][0])
 print('Best score of {}'.format(best_score))
 print('Best episode {}'.format(best_episode))
+print('Average of last 200 episodes {}'.format(last_200))
