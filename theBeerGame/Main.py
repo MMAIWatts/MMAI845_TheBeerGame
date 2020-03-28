@@ -90,7 +90,7 @@ for thisWeek in range(0, WEEKS_TO_PLAY):
     print("Retailer Complete")
     
     #Wholesaler takes turn, update stats
-    myWholesaler.TakeTurn(thisWeek)
+    myWholesaler.TakeTurn(thisWeek, thisWeek)
     myStats.RecordWholesalerCost(myWholesaler.GetCostIncurred())
     myStats.RecordWholesalerOrders(myWholesaler.GetLastOrderQuantity())
     myStats.RecordWholesalerEffectiveInventory(myWholesaler.CalcEffectiveInventory())

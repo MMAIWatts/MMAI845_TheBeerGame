@@ -56,7 +56,7 @@ class Customer:
         #     result = CUSTOMER_SUBSEQUENT_ORDERS
         # return result
         
-        result = np.random.choice(np.arange(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS + 1), size = 1)
+        result = np.random.choice(np.arange(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS + 1))
         return result
     
     def GetBeerReceived(self):

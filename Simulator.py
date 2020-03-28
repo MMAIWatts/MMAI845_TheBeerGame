@@ -34,13 +34,13 @@ for i in range(0, 2):
 # Initialize Statistics object
 myStats = SupplyChainStatistics()
 
-num_episodes = 10000
+num_episodes = 50000
 num_actions = 30
 initial_epsilon = 1.0
 final_epsilon = 0.01
-# agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
-agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
-                                  n_actions=num_actions, mem_size=1000000, batch_size=52)
+agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
+# agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
+#                                   n_actions=num_actions, mem_size=1000000, batch_size=52)
 
 costs_incurred = []
 epsilon_values = []
@@ -62,7 +62,6 @@ for i_episode in tqdm(range(num_episodes)):
     new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes) ** 2
     agent.set_epsilon(new_epsilon)
     epsilon_values.append(new_epsilon)
-    last_last_order_quantity = 0
 
     episode = []
     for thisWeek in range(WEEKS_TO_PLAY):
@@ -73,12 +72,14 @@ for i_episode in tqdm(range(num_episodes)):
         # state is a list of (week num, inventory, incoming, outgoing)
         state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
         action = agent.get_next_action(state)
-        last_last_order_quantity = myWholesaler.lastOrderQuantity
+
         myWholesaler.TakeTurn(thisWeek, action)
-        state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
+        # state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
         reward = -myWholesaler.CalcCostForTurn()
-        done = 1 if thisWeek == WEEKS_TO_PLAY else 0
-        agent.remember(state, action, reward, state_, done)
+        # done = 1 if thisWeek == WEEKS_TO_PLAY else 0
+
+        agent.remember(state, action, reward)
+        # agent.remember(state, action, reward, state_, done)
 
         # Distributor takes turn
         myDistributor.TakeTurn(thisWeek)
@@ -90,8 +91,8 @@ for i_episode in tqdm(range(num_episodes)):
     agent.learn()
     costs_incurred.append(myWholesaler.GetCostIncurred())
 
-    if i_episode % 1000 == 0 and i_episode > 0:
-        agent.save_model()
+    # if i_episode % 1000 == 0 and i_episode > 0:
+    #     agent.save_model()
 
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('Episode')

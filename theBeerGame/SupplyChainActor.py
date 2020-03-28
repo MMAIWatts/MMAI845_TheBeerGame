@@ -60,7 +60,7 @@ class SupplyChainActor:
         self.outgoingDeliveriesQueue.PushEnvelope(amountToDeliver)
         return
     
-    def PlaceOutgoingOrder(self, weekNum, agent_action = None):
+    def PlaceOutgoingOrder(self, weekNum, agent_action=None):
         """
         -------------------------------------------------------
         Calculates the size of the weekly outgoing order.
@@ -92,14 +92,13 @@ class SupplyChainActor:
         # return
 
         if agent_action is None:
-        #basestock policy
-            qunatityPipeline = self.incomingDeliveriesQueue.QuantityPipline()
-            amountToOrder = self.currentOrders - (self.currentStock + qunatityPipeline)
+        # basestock policy
+            quantity_pipeline = self.incomingDeliveriesQueue.QuantityPipline()
+            amountToOrder = self.currentOrders - (self.currentStock + quantity_pipeline)
 
-        #RL agent
+        # RL agent
         else: 
             amountToOrder = agent_action
-
 
         self.outgoingOrdersQueue.PushEnvelope(amountToOrder)
         self.lastOrderQuantity = amountToOrder
