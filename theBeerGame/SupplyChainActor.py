@@ -81,8 +81,9 @@ class SupplyChainActor:
 
             if base_policy == 'BaseStock':
             #basestock policy
-                self.currentPipeline = self.incomingDeliveriesQueue.QuantityPipline()
-                amountToOrder = self.currentOrders - (self.currentStock + self.currentPipeline)
+                self.currentPipeline = self.incomingDeliveriesQueue.QuantityPipeline() + \
+                                       self.outgoingOrdersQueue.QuantityPipeline()
+                amountToOrder = self.currentOrders - self.currentStock - self.currentPipeline
                 if amountToOrder < 0:
                     amountToOrder = 0
 
@@ -137,7 +138,7 @@ class SupplyChainActor:
         if quantityReceived > 0:
             self.currentStock += quantityReceived
                 
-        thisPipeline = self.incomingDeliveriesQueue.QuantityPipline()
+        thisPipeline = self.incomingDeliveriesQueue.QuantityPipeline()
         self.currentPipeline = thisPipeline
         
         return

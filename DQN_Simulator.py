@@ -108,7 +108,9 @@ for i_episode in tqdm(range(num_episodes)):
 
         # Calculate reward
         orders_fulfilled = pre_turn_orders - state_[3]
-        reward = orders_fulfilled - myWholesaler.CalcCostForTurn()
+        stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
+        backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
+        reward = orders_fulfilled - stock_penalty - backorder_penalty
         done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
         agent.remember(state, action, reward, state_, done)
