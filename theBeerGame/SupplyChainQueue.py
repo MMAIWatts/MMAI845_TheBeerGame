@@ -95,8 +95,8 @@ class SupplyChainQueue():
         -------------------------------------------------------
         """
         if len(self.data) >= 1:
-            quantityInPipeline = self.data[0]
-            # quantityInPipeline = sum(self.data)
+            quantityInPipeline = sum(self.data) #sum of all orders in pipeline
+            #quantityInPipeline = self.data[0] #last element in pipeline
         else:
             quantityInPipeline = 0
          

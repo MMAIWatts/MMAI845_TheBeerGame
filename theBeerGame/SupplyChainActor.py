@@ -34,6 +34,7 @@ class SupplyChainActor:
         self.currentStock = INITIAL_STOCK
         self.currentOrders = INITIAL_CURRENT_ORDERS
         self.costsIncurred = INITIAL_COST
+        self.currentPipeline = INITIAL_CURRENT_PIPELINE
         
         self.incomingOrdersQueue = incomingOrdersQueue
         self.outgoingOrdersQueue = outgoingOrdersQueue
@@ -60,30 +61,53 @@ class SupplyChainActor:
         self.outgoingDeliveriesQueue.PushEnvelope(amountToDeliver)
         return
     
-    def PlaceOutgoingOrder(self, weekNum, agent_action=None):
+    def PlaceOutgoingOrder(self, weekNum, agent_action=None , base_policy = 'BaseStock' ):
         """
         -------------------------------------------------------
         Calculates the size of the weekly outgoing order.
         -------------------------------------------------------
         Preconditions: weekNum - the current week number.
         Postconditions:
-            #Calculates the order quantity using an anchor and maintain
+            Fixed: Calculates the order quantity using an anchor and maintain
             strategy.
 
-            Calculates the order quantity using an basestock
+            Base Stock: Calculates the order quantity using an basestock
             strategy
         -------------------------------------------------------
         """
 
-        # return
-
         if agent_action is None:
-        # basestock policy
-            quantity_pipeline = self.incomingDeliveriesQueue.QuantityPipline()
-            amountToOrder = self.currentOrders - (self.currentStock + quantity_pipeline)
-            if amountToOrder < 0:
-                amountToOrder = 0
-        # RL agent
+
+            if base_policy == 'BaseStock':
+        #basestock policy
+                self.currentPipeline = self.incomingDeliveriesQueue.QuantityPipline()
+                amountToOrder = self.currentOrders - (self.currentStock + self.currentPipeline)
+                if amountToOrder < 0:
+                    amountToOrder = 0
+
+
+            elif base_policy == 'Fixed':
+        #First weeks are in equilibrium
+                if weekNum <= 4:
+                    amountToOrder = 4
+                #After first few weeks, the actor chooses the order. We use "anchor and maintain" strategy.
+                else:
+                    #We want to cover any out flows, we know that there are some orders in the pipeline.
+                    amountToOrder = 0.5 * self.currentOrders
+                    
+                    if (TARGET_STOCK - self.currentStock) > 0:
+                        amountToOrder += TARGET_STOCK - self.currentStock
+
+            elif base_policy == 'Random':
+
+                amountToOrder = np.random.choice(np.arange(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS + 1), size = 1)
+
+            else:
+                raise ValueError('invalid policy')
+
+            
+
+        #RL agent
         else: 
             amountToOrder = agent_action
 
@@ -110,6 +134,9 @@ class SupplyChainActor:
         if quantityReceived > 0:
             self.currentStock += quantityReceived
                 
+        thisPipeline = self.incomingDeliveriesQueue.QuantityPipline()
+        self.currentPipeline = thisPipeline
+        
         return
     
     def ReceiveIncomingOrders(self):

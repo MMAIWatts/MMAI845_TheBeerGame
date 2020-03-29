@@ -53,7 +53,7 @@ num_actions = 20
 initial_epsilon = 1.0
 final_epsilon = 0.01
 agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
-# agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
+# agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
 #                                   n_actions=num_actions, mem_size=1000000, batch_size=52)
 
 
@@ -96,11 +96,11 @@ for i_episode in tqdm(range(num_episodes)):
 
         # Wholesaler takes turn
         # state is a list of (week num, inventory, incoming, outgoing)
-        state = list((myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
+        state = list((myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity , myWholesaler.currentPipeline))
         action = agent.get_next_action(state)
 
         myWholesaler.TakeTurn(thisWeek, action)
-        # state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity))
+        # state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
         reward = -myWholesaler.CalcCostForTurn()
         # done = 1 if thisWeek == WEEKS_TO_PLAY else 0
 
