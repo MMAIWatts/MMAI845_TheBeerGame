@@ -28,10 +28,7 @@ class Wholesaler(SupplyChainActor):
         super().__init__(incomingOrdersQueue, outgoingOrdersQueue, incomingDeliveriesQueue, outgoingDeliveriesQueue)
         return
 
-    def TakeTurn(self, weekNum, amount_to_order):
-
-        # The steps for taking a turn are as follows:
-
+    def UpdatePreTurn(self):
         # RECEIVE NEW DELIVERY FROM DISTRIBUTOR
         self.ReceiveIncomingDelivery()  # This also advances the queue!
 
@@ -43,6 +40,8 @@ class Wholesaler(SupplyChainActor):
         #     self.PlaceOutgoingDelivery(4)
         # else:
         self.PlaceOutgoingDelivery(self.CalcBeerToDeliver())
+
+    def TakeTurn(self, weekNum, amount_to_order):
 
         # PLACE ORDER
         self.PlaceOutgoingOrder(weekNum, amount_to_order)
