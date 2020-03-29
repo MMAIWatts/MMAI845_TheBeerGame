@@ -60,7 +60,8 @@ class Factory(SupplyChainActor):
 
         #basestock policy
         amountToOrder = self.currentOrders - self.currentStock
-
+        if amountToOrder < 0:
+            amountToOrder = 0
             
         self.BeerProductionDelayQueue.PushEnvelope(amountToOrder)
         self.lastOrderQuantity = amountToOrder

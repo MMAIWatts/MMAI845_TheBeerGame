@@ -48,13 +48,13 @@ myDistributor = Distributor(distributorWholesalerTopQueue, factoryDistributorTop
 myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
 
-num_episodes = 100000
-num_actions = 20
+num_episodes = 10000
+num_actions = 30
 initial_epsilon = 1.0
 final_epsilon = 0.01
-agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
-# agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
-#                                   n_actions=num_actions, mem_size=1000000, batch_size=52)
+# agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
+agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
+                                  n_actions=num_actions, mem_size=100000, batch_size=236)
 
 
 costs_incurred = []
@@ -63,7 +63,7 @@ epsilon_values = []
 
 for i_episode in tqdm(range(num_episodes)):
     # reset actor states
-    agent.reset()
+    # agent.reset()
     theCustomer = Customer()
     myRetailer = Retailer(None, wholesalerRetailerTopQueue, wholesalerRetailerBottomQueue, None, theCustomer)
 
@@ -96,16 +96,18 @@ for i_episode in tqdm(range(num_episodes)):
 
         # Wholesaler takes turn
         # state is a list of (week num, inventory, incoming, outgoing)
-        state = list((myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity , myWholesaler.currentPipeline))
+        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders,
+                      myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
         action = agent.get_next_action(state)
 
         myWholesaler.TakeTurn(thisWeek, action)
-        # state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders, myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
+        state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders,
+                       myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
         reward = -myWholesaler.CalcCostForTurn()
-        # done = 1 if thisWeek == WEEKS_TO_PLAY else 0
+        done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
-        agent.remember(state, action, reward)
-        # agent.remember(state, action, reward, state_, done)
+        # agent.remember(state, action, reward)
+        agent.remember(state, action, reward, state_, done)
 
         # Distributor takes turn
         myDistributor.TakeTurn(thisWeek)
