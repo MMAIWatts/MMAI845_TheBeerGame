@@ -53,7 +53,7 @@ initial_epsilon = 1.0
 final_epsilon = 0.01
 # agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
 agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=6,
-                                  n_actions=num_actions, mem_size=5000, batch_size=52)
+                                  n_actions=num_actions, mem_size=100000, batch_size=52)
 
 
 costs_incurred = []
@@ -116,13 +116,15 @@ for i_episode in tqdm(range(num_episodes)):
         myFactory.TakeTurn(thisWeek)
 
     costs_incurred.append(myWholesaler.GetCostIncurred())
+    agent.learn()
 
-    if i_episode % 1 == 0 and i_episode > 0:
-        agent.learn()
 
     # save model every xx episodes
     if i_episode % 5000 == 0 and i_episode > 0:
         agent.save_model()
+
+# save final agent
+agent.save_model()
 
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('Episode')

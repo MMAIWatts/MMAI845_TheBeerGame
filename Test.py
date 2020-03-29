@@ -11,7 +11,6 @@ from theBeerGame.Settings import *
 from theBeerGame.SupplyChainQueue import SupplyChainQueue
 from theBeerGame.SupplyChainStatistics import SupplyChainStatistics
 from theBeerGame.Wholesaler import Wholesaler
-from ann_visualizer.visualize import ann_viz
 
 # set Pandas options
 pd.set_option('display.width', 2000)
@@ -144,5 +143,3 @@ df['done'] = dones
 df.to_csv('test1.csv')
 print(df)
 
-# print model graph
-ann_viz(agent.q_eval)
