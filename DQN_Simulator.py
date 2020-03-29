@@ -12,7 +12,8 @@ from theBeerGame.Settings import *
 from theBeerGame.SupplyChainQueue import SupplyChainQueue
 from theBeerGame.SupplyChainStatistics import SupplyChainStatistics
 from theBeerGame.Wholesaler import Wholesaler
-
+def safe_division(n, d):
+    return n / d if d else 0
 # Initialize SupplyChainQueues
 wholesalerRetailerTopQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 wholesalerRetailerBottomQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
@@ -88,13 +89,16 @@ for i_episode in tqdm(range(num_episodes)):
         # Retailer takes turn, update stats
         myRetailer.TakeTurn(thisWeek)
 
+        # Store pre-turn state
+        state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+                      myWholesaler.currentOrders, myWholesaler.currentPipeline))
         # Wholesaler takes turn
         pre_turn_orders = myWholesaler.currentOrders
         myWholesaler.UpdatePreTurn()
 
-        # Store pre-turn state
-        state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
-                      myWholesaler.currentOrders, myWholesaler.currentPipeline))
+        # # Store pre-turn state
+        # state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+        #               myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Decide which action to take
         action = agent.get_next_action(state)
@@ -107,10 +111,16 @@ for i_episode in tqdm(range(num_episodes)):
                        myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Calculate reward
-        orders_fulfilled = pre_turn_orders - state_[3]
+        # orders_fulfilled = pre_turn_orders - state_[3]
         stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
         backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
-        reward = orders_fulfilled - stock_penalty - backorder_penalty
+        # Basic reward function
+        # reward = myWholesaler.outgoingDeliveriesQueue.data[0] - stock_penalty - backorder_penalty
+
+        # Target Stock Based Reward Function
+        # reward = 12 - myWholesaler.CalcEffectiveInventory()
+        reward = 1 - safe_division(1, abs(12 - myWholesaler.CalcEffectiveInventory()))
+
         done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
         agent.remember(state, action, reward, state_, done)

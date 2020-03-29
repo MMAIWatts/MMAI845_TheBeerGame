@@ -13,6 +13,9 @@ from theBeerGame.SupplyChainQueue import SupplyChainQueue
 from theBeerGame.SupplyChainStatistics import SupplyChainStatistics
 from theBeerGame.Wholesaler import Wholesaler
 
+def safe_division(n, d):
+    return n / d if d else 0
+
 # Initialize SupplyChainQueues
 wholesalerRetailerTopQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
 wholesalerRetailerBottomQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
@@ -108,10 +111,12 @@ for i_episode in tqdm(range(num_episodes)):
                        myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Calculate reward
-        orders_fulfilled = pre_turn_orders - state_[3]
+        orders_fulfilled = myWholesaler.outgoingDeliveriesQueue.data[0] # pre_turn_orders - state_[3]
         stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
         backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
         reward = orders_fulfilled - stock_penalty - backorder_penalty
+        # reward = 1 - abs(12 - myWholesaler.CalcEffectiveInventory())
+
 
         # Store event
         agent.remember(state, action, reward)
