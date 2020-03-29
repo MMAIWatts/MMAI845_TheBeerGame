@@ -106,7 +106,7 @@ for i_episode in tqdm(range(num_episodes)):
                        myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Calculate reward
-        orders_fulfilled = state[2] - state_[2]
+        orders_fulfilled = abs(state[2] - state_[2])
         reward = orders_fulfilled - myWholesaler.CalcCostForTurn()
         done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 

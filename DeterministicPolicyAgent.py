@@ -6,7 +6,8 @@ from keras.optimizers import Adam
 import dill
 from ReplayBuffer import ReplayBufferonteCarloAgent:
 
-    def __init__(self, nA, num_episodes=52, discount_factor=0.99, epsilon=0.5, fname='mc_model.npy'):
+class DeterministicAgent:
+    def __init__(self, nA, num_episodes=52, discount_factor=0.99, epsilon=0.5, fname='deterministic_model.npy'):
         self.return_sum = defaultdict(float)
         self.return_count = defaultdict(float)
         self.discount_factor = discount_factor
