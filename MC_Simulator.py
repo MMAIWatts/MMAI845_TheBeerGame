@@ -90,6 +90,7 @@ for i_episode in tqdm(range(num_episodes)):
         myRetailer.TakeTurn(thisWeek)
 
         # Wholesaler takes turn
+        pre_turn_orders = myWholesaler.currentOrders
         myWholesaler.UpdatePreTurn()
 
         # Store pre-turn state
@@ -107,10 +108,10 @@ for i_episode in tqdm(range(num_episodes)):
                        myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Calculate reward
-        orders_fulfilled = state[2] - state_[2]
+        orders_fulfilled = pre_turn_orders - state_[3]
         stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
         backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
-        reward = orders_fulfilled - stock_penalty - 2 * backorder_penalty
+        reward = orders_fulfilled - stock_penalty - backorder_penalty
 
         # Store event
         agent.remember(state, action, reward)

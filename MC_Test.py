@@ -100,6 +100,7 @@ for thisWeek in range(WEEKS_TO_PLAY):
     currentPipeline.append(myWholesaler.currentPipeline)
 
     # Take action
+    pre_turn_orders = myWholesaler.currentOrders
     myWholesaler.TakeTurn(thisWeek, action)
 
     # Store post-turn state
@@ -110,7 +111,7 @@ for thisWeek in range(WEEKS_TO_PLAY):
     orders_fulfilled = state[2] - state_[2]
     stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
     backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
-    reward = orders_fulfilled - stock_penalty - 2 * backorder_penalty
+    reward = orders_fulfilled - stock_penalty - backorder_penalty
     done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
     # record stats

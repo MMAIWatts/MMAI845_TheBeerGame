@@ -83,7 +83,7 @@ class SupplyChainQueue():
         return quantityDelivered
 
 
-    def QuantityPipline(self):
+    def QuantityPipeline(self):
         """
         -------------------------------------------------------
         Returns the beer order in the queue.
