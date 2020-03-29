@@ -36,9 +36,6 @@ class Wholesaler(SupplyChainActor):
         self.ReceiveIncomingOrders()  # This also advances the queue!
 
         # PREPARE DELIVERY
-        # if weekNum <= 4:
-        #     self.PlaceOutgoingDelivery(4)
-        # else:
         self.PlaceOutgoingDelivery(self.CalcBeerToDeliver())
 
     def TakeTurn(self, weekNum, amount_to_order):

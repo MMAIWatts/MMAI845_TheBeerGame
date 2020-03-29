@@ -89,6 +89,7 @@ for i_episode in tqdm(range(num_episodes)):
         myRetailer.TakeTurn(thisWeek)
 
         # Wholesaler takes turn
+        pre_turn_orders = myWholesaler.currentOrders
         myWholesaler.UpdatePreTurn()
 
         # Store pre-turn state
@@ -106,7 +107,7 @@ for i_episode in tqdm(range(num_episodes)):
                        myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Calculate reward
-        orders_fulfilled = state[2] - state_[2]
+        orders_fulfilled = pre_turn_orders - state_[3]
         reward = orders_fulfilled - myWholesaler.CalcCostForTurn()
         done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 

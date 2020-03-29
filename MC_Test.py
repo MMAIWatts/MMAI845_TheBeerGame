@@ -52,17 +52,14 @@ myDistributor = Distributor(distributorWholesalerTopQueue, factoryDistributorTop
 
 myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
-BACKORDER_PENALTY_COST_PER_UNIT = 1.0
 num_episodes = 10000
 num_actions = 30
 initial_epsilon = 1.0
 final_epsilon = 0.01
-# agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
-agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
-                                  n_actions=num_actions, mem_size=10000, batch_size=52)
-
+agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
 
 agent.load_model()
+
 df = pd.DataFrame(columns=['Week', 'currentStock', 'currentOrders', 'lastOrderQuantity', 'currentPipeline',
                            'action', 'reward', 'cumulativeReward', 'done'])
 
@@ -86,9 +83,13 @@ for thisWeek in range(WEEKS_TO_PLAY):
     print("Retailer Complete")
 
     # Wholesaler takes turn
-    # state is a list of (week num, inventory, incoming, outgoing)
+    myWholesaler.UpdatePreTurn()
+
+    # Store pre-turn state
     state = list((myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
                   myWholesaler.currentOrders, myWholesaler.currentPipeline))
+
+    # Detemine which action to take
     action = agent.get_next_action(state)
 
     # record state
@@ -98,8 +99,18 @@ for thisWeek in range(WEEKS_TO_PLAY):
     lastOrderQuantity.append(myWholesaler.lastOrderQuantity)
     currentPipeline.append(myWholesaler.currentPipeline)
 
+    # Take action
     myWholesaler.TakeTurn(thisWeek, action)
-    reward = -myWholesaler.CalcCostForTurn()
+
+    # Store post-turn state
+    state_ = list((myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+                   myWholesaler.currentOrders, myWholesaler.currentPipeline))
+
+    # Calculate reward
+    orders_fulfilled = state[2] - state_[2]
+    stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
+    backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
+    reward = orders_fulfilled - stock_penalty - 2 * backorder_penalty
     done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
     # record stats
