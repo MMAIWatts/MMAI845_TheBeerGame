@@ -108,7 +108,9 @@ for i_episode in tqdm(range(num_episodes)):
 
         # Calculate reward
         orders_fulfilled = state[2] - state_[2]
-        reward = 2 * orders_fulfilled - myWholesaler.CalcCostForTurn()
+        stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
+        backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
+        reward = orders_fulfilled - stock_penalty - 2 * backorder_penalty
 
         # Store event
         agent.remember(state, action, reward)
