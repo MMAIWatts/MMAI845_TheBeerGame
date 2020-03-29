@@ -55,8 +55,8 @@ num_actions = 30
 initial_epsilon = 1.0
 final_epsilon = 0.01
 # agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
-agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
-                                  n_actions=num_actions, mem_size=100000, batch_size=236)
+agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
+                                  n_actions=num_actions, mem_size=10000, batch_size=52)
 
 
 agent.load_model()
@@ -84,8 +84,8 @@ for thisWeek in range(WEEKS_TO_PLAY):
 
     # Wholesaler takes turn
     # state is a list of (week num, inventory, incoming, outgoing)
-    state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
-                  myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
+    state = list((myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+                  myWholesaler.currentOrders, myWholesaler.currentPipeline))
     action = agent.get_next_action(state)
 
     # record state

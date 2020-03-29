@@ -15,7 +15,7 @@ Beer Game constants are defined here.
 """
 
 STORAGE_COST_PER_UNIT = 0.5
-BACKORDER_PENALTY_COST_PER_UNIT = 1
+BACKORDER_PENALTY_COST_PER_UNIT = 20
 
 #We can play the full game since no actor is programmed to dump stock near end of game
 WEEKS_TO_PLAY = 52
@@ -45,6 +45,6 @@ RL constants are defined here.
 """
 NUM_EPISODES = 100000
 NUM_ACTIONS = CUSTOMER_MAXIMUM_ORDERS - CUSTOMER_MINIMUM_ORDERS + 1
-INITIAL_EPSILON = 1
+INITIAL_EPSILON = 1.0
 FINAL_EPSILON = 0.01
 RANDOM_SEED = 42

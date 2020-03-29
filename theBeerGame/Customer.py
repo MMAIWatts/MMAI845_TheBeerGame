@@ -22,7 +22,7 @@ class Customer:
             Initializes the Customer object in its initial state.
         -------------------------------------------------------
         """
-        np.random.seed(RANDOM_SEED)
+        # np.random.seed(RANDOM_SEED)
         self.totalBeerReceived = 0
         self.orders = np.random.randint(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS, size=WEEKS_TO_PLAY)
         return
