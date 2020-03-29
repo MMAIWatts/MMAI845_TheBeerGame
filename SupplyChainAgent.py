@@ -5,7 +5,6 @@ from keras.models import Sequential, load_model
 from keras.optimizers import Adam
 import dill
 from ReplayBuffer import ReplayBuffer
-from time import clock
 
 
 def make_epsilon_greedy_policy(Q, epsilon, nA):

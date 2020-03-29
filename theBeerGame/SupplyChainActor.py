@@ -10,6 +10,7 @@ Version: February 7th 2016
 
 from theBeerGame.Settings import *
 from theBeerGame.SupplyChainQueue import SupplyChainQueue
+import numpy as np
 
 
 class SupplyChainActor:
@@ -61,7 +62,7 @@ class SupplyChainActor:
         self.outgoingDeliveriesQueue.PushEnvelope(amountToDeliver)
         return
     
-    def PlaceOutgoingOrder(self, weekNum, agent_action=None , base_policy = 'BaseStock' ):
+    def PlaceOutgoingOrder(self, weekNum, agent_action=None, base_policy='BaseStock'):
         """
         -------------------------------------------------------
         Calculates the size of the weekly outgoing order.
@@ -79,7 +80,7 @@ class SupplyChainActor:
         if agent_action is None:
 
             if base_policy == 'BaseStock':
-        #basestock policy
+            #basestock policy
                 self.currentPipeline = self.incomingDeliveriesQueue.QuantityPipline()
                 amountToOrder = self.currentOrders - (self.currentStock + self.currentPipeline)
                 if amountToOrder < 0:
@@ -87,7 +88,7 @@ class SupplyChainActor:
 
 
             elif base_policy == 'Fixed':
-        #First weeks are in equilibrium
+            #First weeks are in equilibrium
                 if weekNum <= 4:
                     amountToOrder = 4
                 #After first few weeks, the actor chooses the order. We use "anchor and maintain" strategy.
@@ -98,9 +99,11 @@ class SupplyChainActor:
                     if (TARGET_STOCK - self.currentStock) > 0:
                         amountToOrder += TARGET_STOCK - self.currentStock
 
+                    if amountToOrder < 0:
+                        amountToOrder = 0
             elif base_policy == 'Random':
 
-                amountToOrder = np.random.choice(np.arange(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS + 1), size = 1)
+                amountToOrder = np.random.choice(np.arange(0, NUM_ACTIONS))
 
             else:
                 raise ValueError('invalid policy')

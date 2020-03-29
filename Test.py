@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from tqdm import tqdm
 import numpy as np
-import time
 
 import SupplyChainAgent
 from theBeerGame.Customer import Customer
@@ -13,6 +11,11 @@ from theBeerGame.Settings import *
 from theBeerGame.SupplyChainQueue import SupplyChainQueue
 from theBeerGame.SupplyChainStatistics import SupplyChainStatistics
 from theBeerGame.Wholesaler import Wholesaler
+from ann_visualizer.visualize import ann_viz
+
+# set Pandas options
+pd.set_option('display.width', 2000)
+pd.set_option('display.max_columns', 500)
 
 # Initialize SupplyChainQueues
 wholesalerRetailerTopQueue = SupplyChainQueue(QUEUE_DELAY_WEEKS)
@@ -59,7 +62,7 @@ agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0
 
 agent.load_model()
 df = pd.DataFrame(columns=['Week', 'currentStock', 'currentOrders', 'lastOrderQuantity', 'currentPipeline',
-                           'action', 'reward', 'done'])
+                           'action', 'reward', 'cumulativeReward', 'done'])
 
 weeks = []
 currentStock = []
@@ -68,6 +71,7 @@ lastOrderQuantity = []
 currentPipeline = []
 actions = []
 rewards = []
+cumulativeReward = []
 dones = []
 
 # run episode
@@ -81,14 +85,14 @@ for thisWeek in range(WEEKS_TO_PLAY):
 
     # Wholesaler takes turn
     # state is a list of (week num, inventory, incoming, outgoing)
-    state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders,
+    state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
                   myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
     action = agent.get_next_action(state)
 
     # record state
     weeks.append(thisWeek)
-    currentStock.append(myWholesaler.currentStock)
-    currentOrders.append(myWholesaler.currentOrders)
+    currentStock.append(myWholesaler.CalcEffectiveInventory())
+    currentOrders.append(myWholesaler.incomingOrdersQueue.data[0])
     lastOrderQuantity.append(myWholesaler.lastOrderQuantity)
     currentPipeline.append(myWholesaler.currentPipeline)
 
@@ -99,6 +103,7 @@ for thisWeek in range(WEEKS_TO_PLAY):
     # record stats
     actions.append(action)
     rewards.append(reward)
+    cumulativeReward.append(myWholesaler.GetCostIncurred())
     dones.append(done)
 
     myStats.RecordWholesalerCost(myWholesaler.GetCostIncurred())
@@ -134,6 +139,10 @@ df['lastOrderQuantity'] = lastOrderQuantity
 df['currentPipeline'] = currentPipeline
 df['action'] = actions
 df['reward'] = rewards
+df['cumulativeReward'] = cumulativeReward
 df['done'] = dones
 df.to_csv('test1.csv')
 print(df)
+
+# print model graph
+ann_viz(agent.q_eval)

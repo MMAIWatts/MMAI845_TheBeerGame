@@ -47,16 +47,6 @@ class Factory(SupplyChainActor):
             strategy.
         -------------------------------------------------------
         """
-        # if weekNum <= 4:
-        #     amountToOrder = 4
-        # #After first few weeks, the actor chooses the order. We use "anchor and maintain" strategy.
-        # else:
-        #     #We want to cover any outflows
-        #     amountToOrder = 0.5 * self.currentOrders
-            
-        #     if (TARGET_STOCK - self.currentStock) > 0:
-        #         amountToOrder += TARGET_STOCK - self.currentStock
-
 
         #basestock policy
         amountToOrder = self.currentOrders - self.currentStock

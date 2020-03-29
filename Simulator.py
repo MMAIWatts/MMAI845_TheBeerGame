@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
-import time
 
 import SupplyChainAgent
 from theBeerGame.Customer import Customer
@@ -53,8 +52,8 @@ num_actions = 30
 initial_epsilon = 1.0
 final_epsilon = 0.01
 # agent = SupplyChainAgent.MonteCarloAgent(nA=num_actions, num_episodes=num_episodes, epsilon=initial_epsilon)
-agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
-                                  n_actions=num_actions, mem_size=100000, batch_size=236)
+agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=6,
+                                  n_actions=num_actions, mem_size=5000, batch_size=52)
 
 
 costs_incurred = []
@@ -62,6 +61,15 @@ epsilon_values = []
 
 
 for i_episode in tqdm(range(num_episodes)):
+    # initialize order queues
+    for i in range(0, 2):
+        wholesalerRetailerTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        wholesalerRetailerBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        distributorWholesalerTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        distributorWholesalerBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        factoryDistributorTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+        factoryDistributorBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
+
     # reset actor states
     # agent.reset()
     theCustomer = Customer()
@@ -75,14 +83,6 @@ for i_episode in tqdm(range(num_episodes)):
 
     myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
-    # initialize order queues
-    for i in range(0, 2):
-        wholesalerRetailerTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
-        wholesalerRetailerBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
-        distributorWholesalerTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
-        distributorWholesalerBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
-        factoryDistributorTopQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
-        factoryDistributorBottomQueue.PushEnvelope(CUSTOMER_INITIAL_ORDERS)
 
     # decrease exploration over time and save
     new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes) ** 2
@@ -96,13 +96,13 @@ for i_episode in tqdm(range(num_episodes)):
 
         # Wholesaler takes turn
         # state is a list of (week num, inventory, incoming, outgoing)
-        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders,
-                      myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
+        state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+                      myWholesaler.currentOrders, myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
         action = agent.get_next_action(state)
 
         myWholesaler.TakeTurn(thisWeek, action)
-        state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.currentOrders,
-                       myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
+        state_ = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+                       myWholesaler.currentOrders, myWholesaler.lastOrderQuantity, myWholesaler.currentPipeline))
         reward = -myWholesaler.CalcCostForTurn()
         done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
@@ -115,12 +115,10 @@ for i_episode in tqdm(range(num_episodes)):
         # Factory takes turn, update stats
         myFactory.TakeTurn(thisWeek)
 
-    # update Q table
-    agent.learn()
     costs_incurred.append(myWholesaler.GetCostIncurred())
 
-    if i_episode % 500 == 0 and i_episode > 0:
-        s = ''
+    if i_episode % 1 == 0 and i_episode > 0:
+        agent.learn()
 
     # save model every xx episodes
     if i_episode % 5000 == 0 and i_episode > 0:
@@ -129,7 +127,7 @@ for i_episode in tqdm(range(num_episodes)):
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('Episode')
 ax1.set_ylabel('Cost Incurred', color='b')
-ax1.plot(pd.Series(costs_incurred).rolling(50).mean(), color='b', alpha=0.6)
+ax1.plot(pd.Series(costs_incurred).rolling(10).mean(), color='b', alpha=0.6)
 
 ax2 = ax1.twinx()
 ax2.set_ylabel('Epsilon', color='r')
