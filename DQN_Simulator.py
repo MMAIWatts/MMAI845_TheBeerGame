@@ -46,7 +46,7 @@ myDistributor = Distributor(distributorWholesalerTopQueue, factoryDistributorTop
 
 myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
-num_episodes = 2000
+num_episodes = 1000
 num_actions = 30
 initial_epsilon = 1.0
 final_epsilon = 0.01
