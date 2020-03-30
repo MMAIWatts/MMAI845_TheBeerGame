@@ -55,12 +55,12 @@ myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBo
 BACKORDER_PENALTY_COST_PER_UNIT = 1.0
 num_episodes = 5000
 num_actions = 30
-initial_epsilon = 1.0
+initial_epsilon = 0.01
 final_epsilon = 0.1
-agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.001, input_dims=4,
-                                  n_actions=num_actions, mem_size=10000, batch_size=52)
+agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.001, input_dims=5,
+                                  n_actions=num_actions, mem_size=10000, batch_size=512)
 
-# agent.load_model()
+agent.load_model()
 df = pd.DataFrame(columns=['Week', 'currentStock', 'currentOrders', 'lastOrderQuantity', 'currentPipeline',
                            'action', 'reward', 'cumulativeReward', 'done'])
 
@@ -83,6 +83,7 @@ for thisWeek in range(WEEKS_TO_PLAY):
     myStats.RecordRetailerEffectiveInventory(myRetailer.CalcEffectiveInventory())
 
     # Wholesaler takes turn
+    pre_turn_orders = myWholesaler.currentOrders
 
     # State is a list of (week num, inventory, incoming, outgoing)
     state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
@@ -101,7 +102,6 @@ for thisWeek in range(WEEKS_TO_PLAY):
     currentPipeline.append(myWholesaler.currentPipeline)
 
     # Take action
-    pre_turn_orders = myWholesaler.currentOrders
     myWholesaler.TakeTurn(thisWeek, action)
 
     # Record post-turn state

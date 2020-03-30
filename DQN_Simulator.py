@@ -46,12 +46,13 @@ myDistributor = Distributor(distributorWholesalerTopQueue, factoryDistributorTop
 
 myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
-num_episodes = 5000
+num_episodes = 2000
 num_actions = 30
 initial_epsilon = 1.0
 final_epsilon = 0.01
+epsilon_decay = 0.996
 agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
-                                  n_actions=num_actions, mem_size=1000, batch_size=52)
+                                  n_actions=num_actions, mem_size=1000000, batch_size=512)
 
 costs_incurred = []
 epsilon_values = []
@@ -79,9 +80,12 @@ for i_episode in tqdm(range(num_episodes)):
     myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
     # decrease exploration over time and save
-    new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes) ** 2
-    agent.set_epsilon(new_epsilon)
-    epsilon_values.append(new_epsilon)
+    # new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes) ** 2
+    initial_epsilon *= epsilon_decay
+    if initial_epsilon < final_epsilon:
+        initial_epsilon = final_epsilon
+    agent.set_epsilon(initial_epsilon)
+    epsilon_values.append(initial_epsilon)
 
     # Run episode
     for thisWeek in range(WEEKS_TO_PLAY):
@@ -124,7 +128,8 @@ for i_episode in tqdm(range(num_episodes)):
 
     costs_incurred.append(myWholesaler.GetCostIncurred())
     # Update Q approximator weights
-    agent.learn()
+    if i_episode % 200 == 0 and i_episode > 0:
+        agent.learn()
 
     # save model every 5000 episodes
     if i_episode % 5000 == 0 and i_episode > 0:
