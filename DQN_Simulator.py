@@ -124,7 +124,6 @@ for i_episode in tqdm(range(num_episodes)):
         # Reward Function 3
         # reward = -abs(12 - myWholesaler.CalcEffectiveInventory())
 
-        # Ulta
 
         done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
