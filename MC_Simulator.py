@@ -92,13 +92,16 @@ for i_episode in tqdm(range(num_episodes)):
         # Retailer takes turn, update stats
         myRetailer.TakeTurn(thisWeek)
 
+        # Store pre-turn state
+        state = list((myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+                      myWholesaler.currentOrders, myWholesaler.currentPipeline))
         # Wholesaler takes turn
         pre_turn_orders = myWholesaler.currentOrders
         myWholesaler.UpdatePreTurn()
 
-        # Store pre-turn state
-        state = list((myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
-                      myWholesaler.currentOrders, myWholesaler.currentPipeline))
+        # # Store pre-turn state
+        # state = list((myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+        #               myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Detemine which action to take
         action = agent.get_next_action(state)
@@ -111,11 +114,18 @@ for i_episode in tqdm(range(num_episodes)):
                        myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Calculate reward
-        orders_fulfilled = myWholesaler.outgoingDeliveriesQueue.data[0] # pre_turn_orders - state_[3]
+        orders_fulfilled = myWholesaler.outgoingDeliveriesQueue.data[0]
         stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
         backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
+
+        # Reward Function 1
         reward = orders_fulfilled - stock_penalty - backorder_penalty
-        # reward = 1 - abs(12 - myWholesaler.CalcEffectiveInventory())
+
+        # Reward Function 2
+        # reward =  - stock_penalty - backorder_penalty
+
+        # Reward Function 3
+        # reward = -abs(12 - myWholesaler.CalcEffectiveInventory())
 
 
         # Store event

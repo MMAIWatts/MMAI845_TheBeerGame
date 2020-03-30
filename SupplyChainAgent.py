@@ -82,7 +82,7 @@ class MonteCarloAgent:
 
     def load_model(self):
         with open(self.file_name, 'rb') as dill_file:
-            self.Q = dill.load(self.file_name)
+            self.Q = dill.load(dill_file)
 
     def reset(self):
         self.episode_memory = []

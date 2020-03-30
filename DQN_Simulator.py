@@ -47,12 +47,12 @@ myDistributor = Distributor(distributorWholesalerTopQueue, factoryDistributorTop
 
 myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
-num_episodes = 10000
+num_episodes = 5000
 num_actions = 30
-initial_epsilon = 1.0
+initial_epsilon = 0.2
 final_epsilon = 0.01
 agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
-                                  n_actions=num_actions, mem_size=10000, batch_size=52)
+                                  n_actions=num_actions, mem_size=1000, batch_size=52)
 
 costs_incurred = []
 epsilon_values = []
@@ -80,7 +80,7 @@ for i_episode in tqdm(range(num_episodes)):
     myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
     # decrease exploration over time and save
-    new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes)
+    new_epsilon = initial_epsilon - (initial_epsilon - final_epsilon) * (i_episode / num_episodes)**2
     agent.set_epsilon(new_epsilon)
     epsilon_values.append(new_epsilon)
 
@@ -111,15 +111,15 @@ for i_episode in tqdm(range(num_episodes)):
                        myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
         # Calculate reward
-        # orders_fulfilled = pre_turn_orders - state_[3]
+        orders_fulfilled = myWholesaler.outgoingDeliveriesQueue.data[0]
         stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
         backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
 
         # Reward Function 1
-        # reward = myWholesaler.outgoingDeliveriesQueue.data[0] - stock_penalty - backorder_penalty
+        reward = orders_fulfilled - stock_penalty - backorder_penalty
 
         # Reward Function 2
-        reward =  - stock_penalty - backorder_penalty
+        # reward =  - stock_penalty - backorder_penalty
 
         # Reward Function 3
         # reward = -abs(12 - myWholesaler.CalcEffectiveInventory())

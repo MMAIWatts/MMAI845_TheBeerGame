@@ -90,7 +90,9 @@ for thisWeek in range(WEEKS_TO_PLAY):
                   myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
     # Detemine which action to take
-    action = agent.get_next_action(state)
+    target_inventory = 6
+    target_pipeline = 2*myWholesaler.incomingOrdersQueue.data[0]
+    action = myWholesaler.incomingOrdersQueue.data[0] + (target_inventory - myWholesaler.currentStock + target_pipeline - myWholesaler.currentPipeline)
 
     # record state
     weeks.append(thisWeek)
@@ -101,18 +103,20 @@ for thisWeek in range(WEEKS_TO_PLAY):
 
     # Take action
     pre_turn_orders = myWholesaler.currentOrders
-    myWholesaler.TakeTurn(thisWeek, action)
+    if action > 0:
+        myWholesaler.TakeTurn(thisWeek, action)
+    else:
+        myWholesaler.TakeTurn(thisWeek, 0)
+
 
     # Store post-turn state
     state_ = list((myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
                    myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
     # Calculate reward
-    orders_fulfilled = myWholesaler.outgoingDeliveriesQueue.data[0]
+    orders_fulfilled = state[2] - state_[2]
     stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
     backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
-
-    # Reward Function 1
     reward = orders_fulfilled - stock_penalty - backorder_penalty
     done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
