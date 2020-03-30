@@ -114,12 +114,17 @@ for i_episode in tqdm(range(num_episodes)):
         # orders_fulfilled = pre_turn_orders - state_[3]
         stock_penalty = myWholesaler.currentStock * STORAGE_COST_PER_UNIT
         backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
-        # Basic reward function
+
+        # Reward Function 1
         # reward = myWholesaler.outgoingDeliveriesQueue.data[0] - stock_penalty - backorder_penalty
 
-        # Target Stock Based Reward Function
-        # reward = 12 - myWholesaler.CalcEffectiveInventory()
-        reward = 1 - safe_division(1, abs(12 - myWholesaler.CalcEffectiveInventory()))
+        # Reward Function 2
+        reward =  - stock_penalty - backorder_penalty
+
+        # Reward Function 3
+        # reward = -abs(12 - myWholesaler.CalcEffectiveInventory())
+
+        # Ulta
 
         done = 1 if thisWeek == WEEKS_TO_PLAY - 1 else 0
 
