@@ -53,14 +53,14 @@ myDistributor = Distributor(distributorWholesalerTopQueue, factoryDistributorTop
 myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBottomQueue, QUEUE_DELAY_WEEKS)
 
 BACKORDER_PENALTY_COST_PER_UNIT = 1.0
-num_episodes = 10000
+num_episodes = 5000
 num_actions = 30
 initial_epsilon = 1.0
-final_epsilon = 0.01
-agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=4,
+final_epsilon = 0.1
+agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.001, input_dims=4,
                                   n_actions=num_actions, mem_size=10000, batch_size=52)
 
-agent.load_model()
+# agent.load_model()
 df = pd.DataFrame(columns=['Week', 'currentStock', 'currentOrders', 'lastOrderQuantity', 'currentPipeline',
                            'action', 'reward', 'cumulativeReward', 'done'])
 
@@ -83,11 +83,12 @@ for thisWeek in range(WEEKS_TO_PLAY):
     myStats.RecordRetailerEffectiveInventory(myRetailer.CalcEffectiveInventory())
 
     # Wholesaler takes turn
-    myWholesaler.UpdatePreTurn()
 
     # State is a list of (week num, inventory, incoming, outgoing)
     state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
                   myWholesaler.currentOrders, myWholesaler.currentPipeline))
+
+    myWholesaler.UpdatePreTurn()
 
     # Decide which action to take
     action = agent.get_next_action(state)

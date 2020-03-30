@@ -41,7 +41,7 @@ class Wholesaler(SupplyChainActor):
     def TakeTurn(self, weekNum, amount_to_order):
 
         # PLACE ORDER
-        self.PlaceOutgoingOrder(weekNum, amount_to_order)
+        self.PlaceOutgoingOrder(weekNum, base_policy='Fixed')
 
         # UPDATE COSTS
         self.costsIncurred += self.CalcCostForTurn()
