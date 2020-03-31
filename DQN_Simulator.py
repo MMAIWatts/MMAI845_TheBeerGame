@@ -49,7 +49,7 @@ myFactory = Factory(factoryDistributorTopQueue, None, None, factoryDistributorBo
 
 num_episodes = 5000
 num_actions = 30
-initial_epsilon = 0.2
+initial_epsilon = 1.0
 final_epsilon = 0.01
 agent = SupplyChainAgent.DQNAgent(gamma=0.99, epsilon=initial_epsilon, alpha=0.0005, input_dims=5,
                                   n_actions=num_actions, mem_size=1000, batch_size=52)
@@ -90,7 +90,7 @@ for i_episode in tqdm(range(num_episodes)):
         myRetailer.TakeTurn(thisWeek)
 
         # Store pre-turn state
-        state = list((thisWeek, myWholesaler.CalcEffectiveInventory(), myWholesaler.incomingOrdersQueue.data[0],
+        state = list((thisWeek, myWholesaler.currentStock, myWholesaler.incomingOrdersQueue.data[0],
                       myWholesaler.currentOrders, myWholesaler.currentPipeline))
         # Wholesaler takes turn
         pre_turn_orders = myWholesaler.currentOrders
