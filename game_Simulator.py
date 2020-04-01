@@ -14,7 +14,7 @@ from theBeerGame.Retailer import Retailer
 from theBeerGame.Wholesaler import Wholesaler
 
 #from theBeerGame.Settings import *
-from Settings import *
+from theBeerGame.Settings import *
 from theBeerGame.SupplyChainQueue import SupplyChainQueue
 from theBeerGame.SupplyChainStatistics import SupplyChainStatistics
 
