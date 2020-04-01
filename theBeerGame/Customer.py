@@ -24,7 +24,7 @@ class Customer:
         """
         # np.random.seed(RANDOM_SEED)
         self.totalBeerReceived = 0
-        self.orders = np.random.randint(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS, size=WEEKS_TO_PLAY)
+        self.orders = np.random.randint(CUSTOMER_MINIMUM_ORDERS, CUSTOMER_MAXIMUM_ORDERS +1 , size=WEEKS_TO_PLAY)
         return
     
     def RecieveFromRetailer(self, amountReceived):
@@ -64,7 +64,7 @@ class Customer:
         """
         return self.totalBeerReceived
 
-    def reset(self):
-        self.totalBeerReceived = 0
-        self.orders = np.random.normal(15, 5, size=WEEKS_TO_PLAY)
-        return
+    # def reset(self):
+    #     self.totalBeerReceived = 0
+    #     self.orders = np.random.normal(15, 5, size=WEEKS_TO_PLAY)
+    #     return

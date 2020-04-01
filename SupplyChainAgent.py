@@ -76,13 +76,13 @@ class MonteCarloAgent:
     def set_epsilon(self, epsilon):
         self.epsilon = epsilon
 
-    def save_model(self):
-        with open(self.file_name, 'wb') as dill_file:
+    def save_model(self, path):
+        with open(path, 'wb') as dill_file: #self.file_name
             dill.dump(self.Q, dill_file)
 
-    def load_model(self):
-        with open(self.file_name, 'rb') as dill_file:
-            self.Q = dill.load(self.file_name)
+    def load_model(self, path):
+        with open(path, 'rb') as dill_file:
+            self.Q = dill.load(dill_file)
 
     def reset(self):
         self.episode_memory = []
@@ -137,11 +137,11 @@ class DQNAgent:
 
         _ = self.q_eval.fit(state, q_target, verbose=False)
 
-    def save_model(self):
-        self.q_eval.save(self.model_file)
+    def save_model(self,path):
+        self.q_eval.save(path) #self.model_file
 
-    def load_model(self):
-        self.q_eval = load_model(self.model_file)
+    def load_model(self, path):
+        self.q_eval = load_model(path)
 
     def set_epsilon(self, epsilon):
         self.epsilon = epsilon

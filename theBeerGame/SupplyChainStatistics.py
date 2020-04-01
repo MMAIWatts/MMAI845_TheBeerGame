@@ -214,7 +214,7 @@ class SupplyChainStatistics:
         self.factoryEffectiveInventoryOverTime.append(factoryEffectiveInventoryThisWeek)
         return
     
-    def PlotCosts(self):
+    def PlotCosts(self, path):
         """
         -------------------------------------------------------
         Graphs the costs of each supply chain actor.
@@ -231,11 +231,12 @@ class SupplyChainStatistics:
         legend = plt.legend(loc='upper left', shadow=True)
         plt.ylabel('Cost ($)')
         plt.xlabel("Weeks")
+        plt.savefig(path)
         plt.show()
         
         return
     
-    def PlotOrders(self):
+    def PlotOrders(self, path):
         """
         -------------------------------------------------------
         Graphs the orders of each supply chain actor.
@@ -252,11 +253,12 @@ class SupplyChainStatistics:
         legend = plt.legend(loc='upper left', shadow=True)
         plt.ylabel('Orders')
         plt.xlabel("Weeks")
+        plt.savefig(path)
         plt.show()
         
         return
     
-    def PlotEffectiveInventory(self):
+    def PlotEffectiveInventory(self, path):
         """
         -------------------------------------------------------
         Graphs the effective inventory of each supply chain actor.
@@ -273,6 +275,7 @@ class SupplyChainStatistics:
         legend = plt.legend(loc='upper left', shadow=True)
         plt.ylabel('Effective Inventory')
         plt.xlabel("Weeks")
+        plt.savefig(path)
         plt.show()
         
         return
