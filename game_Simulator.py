@@ -291,7 +291,7 @@ if __name__ == '__main__':
             # save model every 5000 episodes
             if args.agent == "DQN":
                 if i_episode % 5000 == 0 and i_episode > 0:
-                    agent.save_model()
+                    agent.save_model(path = f'saved_models/{all_params}.h5')
 
 
     if args.mode == 'train':        
