@@ -42,8 +42,10 @@ def decrease_epsilon(i_episode, num_episodes, method = EPSILON_METHOD, epsilon_d
         if new_epsilon < FINAL_EPSILON:
             new_epsilon = FINAL_EPSILON
 
-        #TODO add more methods - like step function divided by 2 every 1000 eps
-   
+    elif method == 'step':
+        new_epsilon = INITIAL_EPSILON / (2 ** (np.floor(i_episode /1000)))
+
+           
     else: 
         raise ValueError('invaild epsilon method')
     
@@ -99,7 +101,6 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--agent', type=str, required=True,
                         help='either "MonteCarlo" or "DQN"')
 
-    #TODO number of episodes -- add in the setting instead of arguments ??? -- easier to include it in file_names
     parser.add_argument('-e', '--episodes', type=int, default= 1,
                         help='number of episodes')
 
@@ -125,7 +126,8 @@ if __name__ == '__main__':
 
     #Agent
     if args.agent == "MonteCarlo":
-        agent = SupplyChainAgent.MonteCarloAgent(nA=NUM_ACTIONS, num_episodes=args.episodes, epsilon=INITIAL_EPSILON)
+        agent = SupplyChainAgent.MonteCarloAgent(nA=NUM_ACTIONS, num_episodes=args.episodes, 
+                                    epsilon=INITIAL_EPSILON)
         params = MC_PARAMS
 
     
@@ -184,7 +186,7 @@ if __name__ == '__main__':
         # run one episode
         for thisWeek in range(WEEKS_TO_PLAY):
             # Retailer takes turn, update stats
-            myRetailer.TakeTurn(thisWeek) #TODO check retailer script, it doesn't match with Colin result 
+            myRetailer.TakeTurn(thisWeek)  
             
             if args.mode == 'test':
                 myStats.RecordRetailerCost(myRetailer.GetCostIncurred())
@@ -215,7 +217,6 @@ if __name__ == '__main__':
             myWholesaler.TakeTurn(thisWeek, action)
 
             # Store post-turn state
-            #TODO check state -- MC didn't have thisweek , second element has been changed to currentStock 
             state_ = list((thisWeek, myWholesaler.currentStock, myWholesaler.incomingOrdersQueue.data[0],
                         myWholesaler.currentOrders, myWholesaler.currentPipeline))
 
@@ -224,7 +225,6 @@ if __name__ == '__main__':
             backorder_penalty = myWholesaler.currentOrders * BACKORDER_PENALTY_COST_PER_UNIT
 
             if REWARD_METHOD == 'func1':
-                #TODO double check orders_fulfilled calculation -- it is different in different files
                 orders_fulfilled = myWholesaler.outgoingDeliveriesQueue.data[0] # pre_turn_orders - state_[3]
                 reward = orders_fulfilled - stock_penalty - backorder_penalty
             
@@ -253,7 +253,6 @@ if __name__ == '__main__':
 
             # Store event
             if args.agent == "MonteCarlo":
-                #TODO There isn't state_ here ???
                 agent.remember(state, action, reward)
             
             if args.agent == "DQN":
@@ -284,7 +283,6 @@ if __name__ == '__main__':
             costs_incurred.append(myWholesaler.GetCostIncurred())
             # Update Q table if agent is MC, update Q approximator weights id agent is DQN
 
-            #TODO -- in Colin branch agent will learn each 200 episodes (????) 
             agent.learn()
 
 
@@ -325,7 +323,7 @@ if __name__ == '__main__':
         print('Average of last 100 episodes {}'.format(last_200))
 
     
-    #plots for a test game #TODO: check these plots 
+    #plots for a test game  
     if args.mode == 'test':
 
         myStats.PlotCosts(f'test_results/{all_params}_costs.png')

@@ -47,10 +47,11 @@ INITIAL_EPSILON = 1.0
 FINAL_EPSILON = 0.01
 RANDOM_SEED = 42
 
-EPSILON_METHOD = 'exp' # 'exp' or 'quad' 
+EPSILON_METHOD = 'step' # 'exp' or 'quad' or 'step'
 """
 exp: new_epsilon = INITIAL_EPSILON * (epsilon_decay ** i_episode)
 quad: new_epsilon = INITIAL_EPSILON - (INITIAL_EPSILON - FINAL_EPSILON) * (i_episode / num_episodes) ** 2
+step: divided by 2 every 1000 episodes
 
 """
 EPSILON_DECAY = 0.9996 #used when EPSILON_METHOD = 'exp'
